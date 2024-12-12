@@ -7,26 +7,56 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+class Followers(Base):
+    __tablename__ = 'Followers'
+    id = Column(Integer, primary_key=True)        
+    from_id = Column(Integer, ForeignKey('Users.id'))
+    to_id = Column(Integer, ForeignKey('Users.id'))
+    user_from_id = relationship('Users',ForeignKey=[from_id], backref='Follower')
+    user_to_id = relationship('Users',ForeignKey=[to_id], backref='Followed')
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+
+class Users(Base):
+    __tablename__ = 'Users'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    email = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    city = Column(String)
 
     def to_dict(self):
-        return {}
+        return{
+            "id" : self.id,
+            "email" : self.email,
+            "city" : self.city
+        }
+
+
+class Posts(Base):
+    __tablename__ = 'Posts'
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    content = Column(String)
+    user_id = Column(Integer, ForeignKey('Users.id'))
+    user = relationship('Users', backref='Posts')
+
+
+class Comments(Base):
+    __tablename__ = 'Comments'
+    id = Column(Integer, primary_key=True)
+    content = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey('Users.id'))
+    user = relationship('Users', backref='Comments')
+    post_id = Column(Integer, ForeignKey('Posts.id'))
+    post = relationship('Posts', backref='Comments')
+
+class Medias(Base):
+    __tablename__ = 'Medias'
+    id = Column(Integer, primary_key=True)
+    src = Column(String, nullable=False)
+    post_id = Column(Integer, ForeignKey('Posts.id'))
+    post = relationship('Posts', backref='Medias')
+
+
 
 ## Draw from SQLAlchemy base
 try:
